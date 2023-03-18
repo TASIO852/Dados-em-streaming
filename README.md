@@ -1,6 +1,6 @@
 # Transmissão de dados do Kafka Topic para o Spark usando o Spark Structured Streaming
 
-Esta versão é otimizada para ser mais leve. Tudo é executado a partir de um simples comando. Não há dependência do seu computador além do docker e do docker-compose.
+Esta versão é otimizada para ser mais leve. Tudo é executado a partir de um simples comando. Não há dependência do seu computador além do docker e do docker-compose
 
 Este projeto é uma arquitetura de streaming simples kafka e spark.
 Um arquivo docker-compose inicializa um cluster kafka e um cluster spark com todas as suas dependências.
