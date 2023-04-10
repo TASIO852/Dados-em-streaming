@@ -42,7 +42,7 @@ services:
         ipv4_address: 172.18.0.9
     depends_on:
       - zookeeper
-    
+
   spark:
     image: docker.io/bitnami/spark:3
     container_name: spark
@@ -93,7 +93,7 @@ services:
     networks:
       kafka-spark:
         ipv4_address: 172.18.0.12
-    
+
   spark-streaming-scala:
     container_name: spark-streaming-scala
     image: docker.io/mdiakhate12/spark-kafka-streaming
