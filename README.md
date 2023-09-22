@@ -1,148 +1,90 @@
-# Streaming de dados do Kafka Topic para Spark usando Spark Structured Streaming V2.0
+# Kafka-to-Spark Streaming via Docker
 
-Esta versão é otimizada para ser mais leve. Tudo é executado a partir de um simples comando. Não há nenhuma dependência em seu computador além do docker e do docker-compose.
+Utilize o poder do streaming entre Kafka e Spark através de containers Docker. Não requer instalações além do Docker e do Docker-compose.
 
-## fluxo de trabalho
+![Arquitetura](architecture.png)
 
-Este projeto é uma arquitetura simples de kafka e streaming de spark.
-Um arquivo docker-compose inicializa um cluster kafka e um cluster spark com todas as suas dependências.
-Os produtores enviam mensagens de texto para kafka um tópico chamado "test-topic".
-Você pode consumir mensagens com scripts de consumidores escritos em NodeJS e Python ou transmitir dados com streaming de spark, que simplesmente imprime no console todos os dados recebidos.
+## Resumo
 
-> Aviso: o streaming de dados só funciona com spark em scala por enquanto, a versão python está em andamento
+- **Facilidade**: Execute tudo através de um único comando.
+- **Arquitetura**: Um `docker-compose` levanta clusters Kafka e Spark, já conectados.
+- **Produção**: Envie mensagens para o tópico Kafka "test-topic".
+- **Consumo**: Leia mensagens via scripts Python ou utilize o streaming Spark para visualização no console.
 
-<img src="architecture.png" />
+> ⚠️ **Nota**: Streaming via Spark suporta apenas Scala atualmente. Versão Python em desenvolvimento.
 
-Tudo é automático neste projeto.
+## Pré-requisitos
 
-Tudo o que você precisa fazer é executar um script simples que acionará tudo.
+1. [Docker](https://docs.docker.com/engine/install/ubuntu/) (>= 19.X.X) e Docker Compose (~1.29.2)
+2. Privilégios de root.
+3. Certifique-se que a porta `8080` e a sub-rede `172.18.0.0/24` estão livres.
 
-Você pode mergulhar mais fundo no código e brincar com ele para sujar as mãos 😊
-
-## Requisitos
-
-- Docker e Docker Compose (https://docs.docker.com/engine/install/ubuntu/)
-  - janela de encaixe >= 19.X.X
-  - docker-compose ~1.29.2
-
-> Certifique-se de que:
-
-- você pode executar comandos com privilégios de root em seu computador
-- sua porta 8080 não está em uso
-- a sub-rede 172.18.0.0/24 não está em uso em seu computador
-
-## Estrutura de pastas do projeto
+## Estrutura de Diretórios
 
 ```
 .
-├── architecture.png........ # Arquitetura do projeto
-├── clean-env.sh............ # Limpa o ambiente
-├── docker-compose.yml...... # Criar kafka e acender clusters
-├── nodejs-consumer......... # Consome mensagens de kafka
-│ ├── consumidor.js
-│ ├── Dockerfile
-│ ├── pacote.json
-│ └── package-lock.json
-├── nodejs-producer......... # Produz mensagens para kafka
-│ ├── Dockerfile
-│ ├── pacote.json
-│ └── produtor.js
-├── python-consumer......... # Consome mensagens para kafka
+├── architecture.png           # Visão da arquitetura
+├── clean-env.sh               # Limpa o ambiente
+├── docker-compose.yml         # Levanta clusters Kafka e Spark
+├── python-consumer            # Scripts para consumo do Kafka
 │ ├── consumidor.py
 │ └── Dockerfile
-├── python-producer......... # Produz mensagens para kafka
-│ ├── Dockerfile
-│ └── produtor.py
-├── README.md
-└── spark-streaming......... # Consumir dados de streaming do kafka e afundar no console
-      ├── python.............. # Streaming com python (Work In Progress)
-      └── scala............... # Streaming com scala
+├── python-producer            # Scripts para produção no Kafka
+│ ├── produtor.py
+│ └── Dockerfile
+└── spark-streaming            # Scripts para streaming Kafka-to-Spark
+      ├── python               # Em desenvolvimento
+      └── scala
 ```
 
-## Executando serviços
+## Serviços e Endereços
 
-| nome do serviço              | endereço[:porta] |
-| ---------------------------- | ---------------- |
-| tratador                     | 172.18.0.8:2181  |
-| kafka (do host)              | 172.18.0.9:9093  |
-| kafka (dentro do recipiente) | 172.18.0.9:9092  |
-| spark mestre                 | 172.18.0.10:7077 |
-| spark interface do usuário   | 172.18.0.10:8080 |
-| spark trabalhador 1          | 172.18.0.11      |
-| spark trabalhador 2          | 172.18.0.12      |
-| spark-streaming-kafka        | 172.18.0.13      |
-| nodejs-produtor              | 172.18.0.14      |
-| nodejs-consumer              | 172.18.0.15      |
-| produtor de python           | 172.18.0.16      |
-| python-consumidor            | 172.18.0.17      |
+- **Kafka**: `172.18.0.9:9093` (host) / `172.18.0.9:9092` (container)
+- **Spark Master**: `172.18.0.10:7077`
+- **Spark UI**: `172.18.0.10:8080`
+- ... (outros serviços omitidos para brevidade)
 
-O projeto cria um nome de rede docker "kafka-spark" no intervalo de endereços 172.18.0.0/24
+> **Nota**: O projeto usa a rede Docker "kafka-spark" no range `172.18.0.0/24`.
 
-## Começando
+## Passo-a-Passo
 
-> Observação: você pode acessar os arquivos docker-compose.yml ou run.sh para entender melhor como as coisas funcionam.
+1. **Configuração Inicial**
 
-### 1. Clone o repositório e o cd na pasta
+   ```bash
+   git clone https://github.com/TASIO852/Dados-em-streaming.git
+   cd kafka-spark-streaming-docker/
+   ```
 
-> Nota: Certifique-se de estar no diretório <kafka-spark-streaming-docker>
+2. **Execute os Containers**
 
-```
-      git clone https://github.com/MDiakhate12/kafka-spark-streaming-docker.git
-      cd kafka-spark-streaming-docker/
-```
+   ```bash
+   docker-compose up
+   ```
 
-### 2. Execute docker-compose.yml
+3. **Inicie o Streaming do Spark**
 
-> Importante: Não feche o terminal depois de executar o docker-compose <br>
+   ```bash
+   sudo chmod 777 jars_dir && \
+   docker exec -it spark \
+   submit spark \
+   --packages "org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.0" \
+   --master "spark://172.18.0.10:7077" \
+   --class Transmissão \
+   --conf spark.jars.ivy=/opt/bitnami/spark/ivy \
+   ivy/spark-streaming-with-kafka_2.12-1.0.jar
+   ```
 
-```
-docker-compose
-```
+## Monitoramento
 
-> Nota: Aguarde até que todos os serviços estejam ativos (cerca de 1 a 2 minutos, o console ficará bastante ocioso)
-
-### 3. Envie o trabalho de streaming do Spark
-
-> Nota: Certifique-se de ter privilégios de root
-
-Em um novo terminal, execute o comando
+Acesse a [IU do Spark](http://172.18.0.10:8080) ou visualize os logs via:
 
 ```bash
-sudo chmod 777 jars_dir && \
-docker exec -it spark \
-enviar spark \
---packages "org.apache.spark:spark-sql-kafka-0-10_2.12:3.2.0" \
---master "spark://172.18.0.10:7077" \
---class Transmissão \
---conf spark.jars.ivy=/opt/bitnami/spark/ivy \
-ivy/spark-streaming-with-kafka_2.12-1.0.jar
-```
-
-Depois que tudo estiver definido, sua saída deve ficar assim:
-
-![Captura de tela de 15/11/2021 15/05/41](https://user-images.githubusercontent.com/46793415/141721499-a248453e-4a7f-4d5e-88ea-c353de7922b9.png)
-
-É isso 🎉🎉 Parabéns.
-
-## Olha o resultado
-
-> Observação: a IU do Spark está disponível em http://172.18.0.10:8080
-
-Em um novo terminal, você pode ver os logs de cada serviço executando:
-
-```
 docker-compose logs -f [SERVICE_NAME]
 ```
 
-Os serviços disponíveis são:
+## Próximos Passos
 
-1. tratador
-2. kafka
-3. spark
-4. spark-worker-1
-5. trabalhador-spark-2
-6. spark-streaming-kafka
-7. nodejs-produtor
-8. nodejs-consumer
-9. produtor de python
-10. consumidor de python
+- Implementação com Terraform.
+- Deploy na AWS.
+
+---
