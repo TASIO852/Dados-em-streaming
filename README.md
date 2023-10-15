@@ -34,7 +34,7 @@ Utilize o poder do streaming entre Kafka e Spark através de containers Docker. 
 │ └── Dockerfile
 └── spark-streaming            # Scripts para streaming Kafka-to-Spark
       ├── python               # Em desenvolvimento
-      └── scala
+      └── scala                # Em desenvolvimento
 ```
 
 ## Serviços e Endereços

@@ -1,7 +1,15 @@
+# Use uma imagem base Python
 FROM python:3
 
-ADD producer.py /
+# Diretório de trabalho dentro do container
+WORKDIR /app
 
-RUN pip install kafka-python
+# Copie o arquivo de requisitos e instale as dependências
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD [ "python", "./producer.py" ]
+# Copie todo o diretório atual para o diretório de trabalho (supondo que seu Dockerfile esteja no diretório raiz do projeto)
+COPY . .
+
+# Execute o consumidor
+CMD ["python", "-u", "./producer.py"]
